@@ -12,20 +12,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
  */
 trait TimeStampableTrait
 {
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $createdAt;
+    #[ORM\Column]
+    private DateTime $createdAt;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $updatedAt;
+    #[ORM\Column]
+    private DateTime $updatedAt;
 
-    /**
-     * @ORM\Column(type="datetime", nullable=true)
-     */
-    private $deletedAt;
+    #[ORM\Column(nullable: true)]
+    private DateTime $deletedAt;
 
     /**
      * @return DateTimeInterface|null
@@ -36,39 +30,47 @@ trait TimeStampableTrait
     }
 
     /**
-     * @param DateTimeInterface $createdAt
-     * @return $this
+     * @return DateTime
      */
-    public function setCreatedAt(DateTimeInterface $createdAt): self
+    public function getUpdatedAt(): DateTime
     {
-        $this->createdAt = $createdAt;
-
-        return $this;
+        return $this->updatedAt;
     }
 
     /**
-     * @return DateTimeInterface|null
+     * @param DateTime $updatedAt
      */
-    public function getUpdatedAt(): ?DateTimeInterface
-    {
-        return $this->updatedAt ?? new DateTime();
-    }
-
-    /**
-     * @param DateTimeInterface $updatedAt
-     * @return $this
-     */
-    public function setUpdatedAt(DateTimeInterface $updatedAt): self
+    public function setUpdatedAt(DateTime $updatedAt): void
     {
         $this->updatedAt = $updatedAt;
-
-        return $this;
     }
 
     /**
-     * @ORM\PrePersist()
-     * @ORM\PreUpdate()
+     * @return DateTime
      */
+    public function getDeletedAt(): DateTime
+    {
+        return $this->deletedAt;
+    }
+
+    /**
+     * @param DateTime $deletedAt
+     */
+    public function setDeletedAt(DateTime $deletedAt): void
+    {
+        $this->deletedAt = $deletedAt;
+    }
+
+    /**
+     * @param DateTime $createdAt
+     */
+    public function setCreatedAt(DateTime $createdAt): void
+    {
+        $this->createdAt = $createdAt;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
     public function updateTimestamps(): void
     {
         $now = new DateTime();
@@ -78,16 +80,4 @@ trait TimeStampableTrait
         }
     }
 
-    public function getDeletedAt(): ?\DateTimeInterface
-    {
-        return $this->deletedAt;
-    }
-
-    public function setDeletedAt(?\DateTimeInterface $deletedAt): self
-    {
-        $this->deletedAt = $deletedAt;
-
-        return $this;
-    }
-    
 }

@@ -1,12 +1,9 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Callback;
 
 
-use App\Entity\Device;
-use App\Entity\DeviceToken;
 use App\Service\Decorater\DeviceDecorator;
-use App\Type\RegisterType;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
 

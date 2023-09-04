@@ -5,32 +5,26 @@ namespace App\EventListener;
 use App\Entity\Subscription;
 use App\Service\Callback\SubscriptionCallbackService;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
+use Psr\Log\LoggerInterface;
 
-class SubscriptionChangeListener
+class SubscriptionStartedChangeListener
 {
 
     private SubscriptionCallbackService $subscriptionCallbackService;
+    private LoggerInterface $logger;
 
-    public function __construct(SubscriptionCallbackService $subscriptionCallbackService)
+    public function __construct(LoggerInterface $logger, SubscriptionCallbackService $subscriptionCallbackService)
     {
         $this->subscriptionCallbackService = $subscriptionCallbackService;
+        $this->logger = $logger;
     }
 
-    public function postUpdate(Subscription $subscription, LifecycleEventArgs $event)
+    public function prePersist(Subscription $subscription, LifecycleEventArgs $event)
     {
-        $uow = $event->getEntityManager()->getUnitOfWork();
-
-        $changes = $uow->getEntityChangeSet($subscription);
-        dd($changes);
-        foreach ($changes as $property => $change) {
-            switch ($property){
-                case 'expireDate':
-                    break;
-                case 'status':
-                    break;
-                case '':
-                    break;
-            }
+        try{
+            $this->startedRequest($subscription);
+        }catch (\Exception $exception){
+            $this->logger->error($exception->getMessage());
         }
     }
 
@@ -39,13 +33,4 @@ class SubscriptionChangeListener
         $this->subscriptionCallbackService->started($subscription);
     }
 
-    public function renewedRequest(Subscription $subscription)
-    {
-        $this->subscriptionCallbackService->started($subscription);
-    }
-
-    public function canceledRequest(Subscription $subscription)
-    {
-        $this->subscriptionCallbackService->started($subscription);
-    }
 }

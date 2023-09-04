@@ -1,6 +1,5 @@
 <?php
 
-// src/Security/ApiKeyAuthenticator.php
 namespace App\Security;
 
 use Firebase\JWT\JWT;
@@ -37,12 +36,12 @@ class ApiKeyAuthenticator extends AbstractAuthenticator
      */
     public function supports(Request $request): ?bool
     {
-        return $request->headers->has('Token');
+        return $request->headers->has('client-token');
     }
 
     public function authenticate(Request $request): Passport
     {
-        $accessToken = $request->headers->get('Token');
+        $accessToken = $request->headers->get('client-token');
         if (null === $accessToken) {
             // The token header was empty, authentication fails with HTTP Status
             // Code 401 "Unauthorized"
@@ -57,12 +56,6 @@ class ApiKeyAuthenticator extends AbstractAuthenticator
             );
         }
 
-        if (empty($tokenData->platform)) {
-            throw new CustomUserMessageAuthenticationException(
-                'AUTH_PLATFORM_REQUIRED'
-            );
-        }
-
 
         if($tokenData->expireTime < time())
         {
@@ -74,11 +67,10 @@ class ApiKeyAuthenticator extends AbstractAuthenticator
         return new SelfValidatingPassport(
             new UserBadge($accessToken, function () use ($tokenData,$accessToken) {
                 $apiKeyUser = new ApiKeyUser();
-                $apiKeyUser->id = $tokenData->userId;
-                $apiKeyUser->roles = $tokenData->role;
-                $apiKeyUser->username = $tokenData->username;
-                $apiKeyUser->vendorId = $tokenData->vendor ?? null;
-                $apiKeyUser->token = $accessToken;
+                $apiKeyUser->setUid($tokenData->uId);
+                $apiKeyUser->setAppId($tokenData->appId);
+                $apiKeyUser->setOperatingSystem($tokenData->operatingSystem);
+                $apiKeyUser->setToken($accessToken);
 
                 return $apiKeyUser;
             })

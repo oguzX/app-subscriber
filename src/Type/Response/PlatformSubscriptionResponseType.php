@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Type;
+namespace App\Type\Response;
 
-use Symfony\Component\Validator\Constraints as Assert;
 
-class PurchaseType
+class PlatformSubscriptionResponseType
 {
-    #[Assert\NotBlank]
-    private ?string $receipt = null;
+    public string $status;
+    public \DateTime $expireDate;
 }

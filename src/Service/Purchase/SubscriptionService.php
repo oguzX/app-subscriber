@@ -8,6 +8,7 @@ use App\Service\Purchase\Platform\Apple;
 use App\Service\Purchase\Platform\Google;
 use App\Type\Response\PlatformSubscriptionResponseType;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\String\Exception\InvalidArgumentException;
 
 class SubscriptionService
 {
@@ -58,20 +59,34 @@ class SubscriptionService
      */
     private function updateSubscription(Device $device, string $receipt, PlatformSubscriptionResponseType $platformSubscriptionResponseType): Subscription
     {
-        if (!$platformSubscriptionResponseType->status){
-            return false;
-        }
+//        if (!$platformSubscriptionResponseType->status){
+//            throw new InvalidArgumentException('RECEIPT_NOT_VALID');
+//        }
 
-        $subscription = $this->entityManager->getRepository(Subscription::class)->getSubscription($device, $receipt);
+        $subscription = $this->entityManager->getRepository(Subscription::class)->getSubscriptionByDevice($device);
         if (!$subscription){
             $subscription = new Subscription();
             $subscription->setDevice($device);
             $subscription->setPlatform($device->getOperatingSystem());
         }
 
+        $subscription->setReceipt($receipt);
         $subscription->setStatus($platformSubscriptionResponseType->status);
         $subscription->setExpireDate($platformSubscriptionResponseType->expireDate);
 
+        $this->entityManager->persist($subscription);
+        $this->entityManager->flush();
+
         return $subscription;
+    }
+
+    public function getSubscription(Device $device)
+    {
+        return $this->entityManager->getRepository(Subscription::class)->getSubscriptionByDevice($device);
+    }
+
+    public function getActiveExpiredSubscriptions()
+    {
+        return $this->entityManager->getRepository(Subscription::class)->getActiveExpiredSubscriptions();
     }
 }

@@ -2,7 +2,10 @@
 
 namespace App\Service\Purchase\Platform;
 
-class Apple
+class Apple extends Platform
 {
-
+    public function approveReceipt($receipt): \App\Type\Response\PlatformSubscriptionResponseType
+    {
+        return $this->request($receipt);
+    }
 }

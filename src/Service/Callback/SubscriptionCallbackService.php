@@ -1,40 +1,46 @@
 <?php
 
-namespace App\Service;
+namespace App\Service\Callback;
 
 
-use App\Entity\Device;
-use App\Entity\DeviceToken;
-use App\Service\Decorater\DeviceDecorator;
-use App\Type\RegisterType;
-use Doctrine\ORM\EntityManagerInterface;
-use GuzzleHttp\Client;
+use App\Entity\Application;
+use App\Entity\Subscription;
 
-class CallbackService{
+class SubscriptionCallbackService{
 
-    private EntityManagerInterface $entityManager;
-    private DeviceDecorator $deviceDecorator;
+
+    private CallbackService $callbackService;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
-        DeviceDecorator $deviceDecorator
+        CallbackService $callbackService
     )
     {
-        $this->entityManager = $entityManager;
-        $this->deviceDecorator = $deviceDecorator;
+        $this->callbackService = $callbackService;
     }
 
-    /**
-     * @return string
-     */
-    public function request($url,$data,$method = 'POST')
-    {
-        $client = new Client();
-        $request = $client->request($method, $url, [
-           'json' => $data
+    public function send(Subscription $subscription, Application $application,  $callbackUrl){
+        return $this->callbackService->request($callbackUrl, [
+            'appId' => $application->getAppId(),
+            'deviceId' => $subscription->getDevice()->getUid()
         ]);
+    }
 
-        return $request->getBody()->getContents();
+    public function started(Subscription $subscription)
+    {
+        $application = $subscription->getDevice()->getApplication();
+        return $this->send($subscription, $application, $application->getCallbackStarted());
+    }
+
+    public function renewed(Subscription $subscription)
+    {
+        $application = $subscription->getDevice()->getApplication();
+        return $this->send($subscription, $application, $application->getCallbackRenewed());
+    }
+
+    public function cancelled(Subscription $subscription)
+    {
+        $application = $subscription->getDevice()->getApplication();
+        return $this->send($subscription, $application, $application->getCallbackCanceled());
     }
 
 }

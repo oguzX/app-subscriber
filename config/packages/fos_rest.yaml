@@ -1,0 +1,20 @@
+fos_rest:
+  view:
+    view_response_listener:  true
+  format_listener:
+    rules:
+      - { path: ^/api, prefer_extension: true, fallback_format: json, priorities: [ json ] }
+  serializer:
+    serialize_null: true
+
+  body_listener:
+    enabled: true
+    decoders:
+      json: fos_rest.decoder.json
+  exception:
+    messages:
+      Symfony\Component\HttpKernel\Exception\HttpException: true
+
+  body_converter:
+    enabled: true
+    validate: true
